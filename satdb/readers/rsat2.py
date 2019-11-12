@@ -78,6 +78,5 @@ def gcps_to_polygon(gcps, w, h):
     col = [a.col for a in gcps]
     lat = [a.lat for a in gcps]
     lon = [a.lon for a in gcps]
-    
-
+    # WIP!
     
