@@ -32,10 +32,8 @@ class RSAT2Reader(object):
         self._fh.close()
     
     def _get_simple_coverage_polygon(self):
-        return _transform_to_polygon(
-            _compute_geotranform_from_gcps(self._fh),
-            self._fh.width,
-            self._fh.height
+        return gcps_to_polygon(
+            self._fh.gcps[0]
             )
 
 
@@ -73,10 +71,43 @@ def _transform_to_polygon(transform, w, h):
     
     return polygon
 
-def gcps_to_polygon(gcps, w, h):
-    row = [a.row for a in gcps]
-    col = [a.col for a in gcps]
-    lat = [a.lat for a in gcps]
-    lon = [a.lon for a in gcps]
-    # WIP!
+def gcps_to_polygon(gcps):
+    rows = [a.row for a in gcps]
+    cols = [a.col for a in gcps]
+    lats = [a.y for a in gcps]
+    lons = [a.x for a in gcps]
+
+    shape = (
+        len(np.unique(cols)),
+        len(np.unique(rows))
+        )
     
+    xmax = len(np.unique(cols))
+    ymax = len(np.unique(cols))
+    
+    lat_array = np.reshape(lats, shape)
+    lon_array = np.reshape(lons, shape)
+
+    xmax = xmax - 1
+    ymax = ymax - 1
+    xmed = int(xmax/2)
+    ymed = int(ymax/2)
+    polygon = {
+        "coordinates":
+        [[            
+            [lon_array[0,0],        lat_array[0,0]],
+            [lon_array[0, xmed],    lat_array[0, xmed]],
+            [lon_array[0, xmax],    lat_array[0, xmax]],
+            [lon_array[ymed, xmax], lat_array[ymed, xmax]],
+            [lon_array[ymax, xmax], lat_array[ymax, xmax]],
+            [lon_array[ymax, xmed], lat_array[ymax, xmed]],
+            [lon_array[ymax, 0],    lat_array[ymax, 0]],
+            [lon_array[ymed, 0],    lat_array[ymed, 0]],
+            [lon_array[0,0],        lat_array[0,0]]
+            ]
+        ],
+        "type":"Polygon"
+    }
+    return polygon
+        
+
